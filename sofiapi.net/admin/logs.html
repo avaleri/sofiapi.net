@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="styles.css">
+    </head>
+    <body>
+
+    <div id="app">
+        <h1>Logs</h1>
+        <div id="routeFilter">
+                <input type="text" autocomplete="Filter logs" id="txtFilter" />
+                <input type="button" value="Filter" id="btnFilter" />
+            </div>        
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <td>
+                        LogID
+                    </td>
+                    <td>
+                        Application
+                    </td>
+                    <td>
+                        Time
+                    </td>
+                    <td>
+                        Host
+                    </td>
+                    <td>
+                        LogType
+                    </td>                    
+                    <td>
+                        Source
+                    </td>
+                    <td>
+                        Message
+                    </td>
+                    <td>
+                        User Name
+                    </td>
+                    <td>
+                        Status Code
+                    </td>
+                    <td>
+                        Headers
+                    </td>
+                    <td>
+                        Cookies
+                    </td>
+                    <td>
+                        QueryString
+                    </td>          
+                    <td>
+                        Body
+                    </td>
+                    <td>
+                        Context
+                    </td>       
+                </tr>
+            </thead>
+            <tbody>
+                <template id="row">
+                    <tr>
+                        <td>
+
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                           
+                        </td>
+                        <td>
+                           
+                        </td>
+                        <td>
+                           
+                        </td>
+                        <td>
+                           
+                        </td>
+                        <td>
+                           
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                           
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>                                                
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <div>
+            <template id="pagingButton">
+                <span style="padding-left: 5px;  padding-right: 5px; display: table-cell; cursor: pointer; border-style: solid; border-color: black; border-width: 1pt;">
+
+                </span>
+            </template>
+            <div id="paginationContianer" style="margin-top: 10px;">
+
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    (
+        function(){
+
+            function btnFilter_Click(ele) {
+                var txtFilter = document.getElementById('txtFilter');
+                var filter = txtFilter.value;
+                GetLogs(1,filter);
+            }
+
+            function GetTemplate(querySelector) {
+                let template = document.querySelector(querySelector);
+                return template;
+            }
+            
+            function GetDisplayTemplate() {
+                return GetTemplate('#row');
+            }
+
+            function GetDateDisplayFormat(data) {
+                var result = '';
+                if(data) {
+                    var dt = new Date(data);
+                    result = dt.toLocaleDateString('en-US', {hour12: true}) + ' ' + dt.toLocaleTimeString('en-US', {hour12: true})
+                }
+                return result;
+            }
+
+            function BindDisplayTemplate(template, data) {
+                var clone = template.content.cloneNode(true);
+                var cells = clone.querySelectorAll('td');
+                var cellIndex = 0;
+                cells[cellIndex].setAttribute('data-log', JSON.stringify(data));
+                
+                cells[cellIndex].textContent = data.LogID;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.Application;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;                
+                
+                cells[cellIndex].textContent = GetDateDisplayFormat(data.TimeUtc);
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.Host;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+                
+                cells[cellIndex].textContent = data.LogType;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;                
+                
+                cells[cellIndex].textContent = data.Source
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.Message;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.UserName;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.StatusCode;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+                
+                cells[cellIndex].textContent = data.Headers;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.Cookies;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.QueryString;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.Body;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                cells[cellIndex].textContent = data.Context;
+                cells[cellIndex].setAttribute('title',cells[cellIndex].textContent);
+                cellIndex++;
+
+                return clone;
+            }
+
+            function GetPageNumbers(rowCount, pageSize, currentPage) {
+                
+                if(pageSize > 0) {
+                    var pageRange = 2;
+                    var numPages = Math.ceil(rowCount/pageSize);
+                    if(numPages == 1) {
+                        return [];
+                    }
+
+                    var startPage = currentPage - pageRange;
+                    var endPage = currentPage + pageRange;
+
+                    if(startPage <= 0) {
+                        startPage = 1;
+                    }
+
+                    if(endPage > numPages) {
+                        endPage = numPages;
+                    }
+
+                    var pageButtons = [];
+                    for(var i = startPage; i <= endPage; i++)
+                    {
+                        pageButtons.push(i);
+                    }
+
+                    return pageButtons;
+                }
+            }
+
+            function RenderPagination(pageNumbers, currentPage) {
+                document.getElementById('paginationContianer').innerHTML = ''; // clear pre-existing state
+                for(var i = 0; i < pageNumbers.length; i++) {
+                    RenderPageNumber(pageNumbers[i], currentPage == pageNumbers[i]);
+                }
+            }
+
+            function RenderPageNumber(pageNumber, isCurrentPage)
+            {
+                var template = document.querySelector('#pagingButton');
+                var clone = template.content.cloneNode(true);
+                clone.children[0].textContent = pageNumber.toString();
+                
+                if(isCurrentPage === true) {
+                   clone.children[0].style.setProperty('font-weight','bold');
+                }
+
+                clone.children[0].onclick = function() { 
+                    ClearLogs();
+                    GetLogs(pageNumber);
+                };
+                document.getElementById('paginationContianer').appendChild(clone);
+            }
+
+
+            function BindLogsTable(routeJson, currentPage) {
+                if(routeJson && routeJson.length > 0) {
+                        var template = GetDisplayTemplate();                           
+                        for(let i = 0; i < routeJson.length; i++) {
+                            var route = routeJson[i];
+                            var clone = BindDisplayTemplate(template,route);
+                            template.parentNode.appendChild(clone);
+                        }
+
+                        var pageNumbers = GetPageNumbers(routeJson[0].MaxRows, routeJson[0].PageSize, currentPage);
+                        RenderPagination(pageNumbers, currentPage);
+                    }
+            }
+
+            function BindEventHandlers() {
+                var btnFilter = document.getElementById('btnFilter');
+                btnFilter.onclick = (function() {btnFilter_Click(btnFilter)});
+            }
+
+            BindEventHandlers();
+
+            function ClearLogs() {
+                var exisitingRoutes = document.querySelectorAll('tbody > tr');
+                for(var i = 0; i < exisitingRoutes.length; i++) {
+                    exisitingRoutes[i].parentNode.removeChild(exisitingRoutes[i]);
+                }
+
+            }
+
+            function GetLogs(pageNumber, filter) {
+                var fetchRoutes = '/api/routes/logs/getall' + '?PageNo=' + pageNumber;
+
+                if(filter && filter.length > 2) {
+                    fetchRoutes +='&SearchValue=' + filter;
+                }
+
+                fetch(fetchRoutes).then(function(response) {
+                        var responseJson = response.json();
+                        responseJson.then(function (result) {
+                            ClearLogs();
+                            BindLogsTable(result, pageNumber);
+                    }, function(err) {
+                        alert(err);
+                    });
+                });
+            }
+
+            GetLogs(1);
+
+        }
+    )();
+
+    </script>
+    </body>
+</html>

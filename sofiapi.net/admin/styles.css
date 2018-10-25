@@ -1,0 +1,19 @@
+        #paginationContianer > span:hover {
+            background-color: rgb(179, 179, 179);
+        }
+
+        #paginationContianer {
+            color: blue;
+        }
+        
+        #app
+         {
+             margin: 10px;
+        }
+
+        #logTable > tbody > tr > td {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 200px;
+        }

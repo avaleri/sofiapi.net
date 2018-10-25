@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  sofiapi.net:
+    image: ${DOCKER_REGISTRY}sofiapinet
+    build:
+      context: .\sofiapi.net
+      dockerfile: Dockerfile
